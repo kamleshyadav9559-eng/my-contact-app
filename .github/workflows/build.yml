@@ -18,11 +18,6 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        channel: 'stable'
-
     - name: Set up Java
       uses: actions/setup-java@v4
       with:
@@ -32,18 +27,31 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.3'
+        channel: 'stable'
+
     - name: Install Flet
       run: |
         python -m pip install --upgrade pip
-        pip install "flet[all]"
+        pip install flet==0.24.1
 
-    - name: Build APK
+    - name: Verify Files and Build APK
       run: |
+        ls -la
         yes | flutter doctor --android-licenses || true
-        flet build apk --yes -v
+        flet build apk --yes --verbose
+
+    - name: Find and Collect APK
+      run: |
+        mkdir -p final_output
+        find . -name "*.apk" -exec cp {} final_output/ \;
+        ls -la final_output
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: Contact-Book-APK
-        path: build/apk/*.apk
+        path: final_output/*.apk
